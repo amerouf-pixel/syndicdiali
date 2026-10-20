@@ -1,0 +1,406 @@
+{
+  "entities": {
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Bootstrapped administrator marker document.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["uid", "createdAt"]
+    },
+    "ApartmentRecord": {
+      "title": "ApartmentRecord",
+      "description": "Monthly HOA contribution status for a building apartment (no PII stored).",
+      "type": "object",
+      "properties": {
+        "ownerUid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "aptId": {
+          "type": "integer"
+        },
+        "number": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 16
+        },
+        "floor": {
+          "type": "integer"
+        },
+        "residentNameFr": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "residentNameAr": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "residentNameEn": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "paid": {
+          "type": "boolean"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "method": {
+          "type": "string",
+          "enum": ["none", "methodCash", "methodTransfer", "methodCheck"],
+          "maxLength": 32
+        },
+        "paidDate": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "receiptNo": {
+          "type": "string",
+          "maxLength": 32
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerUid",
+        "aptId",
+        "number",
+        "floor",
+        "residentNameFr",
+        "residentNameAr",
+        "residentNameEn",
+        "paid",
+        "amount",
+        "method",
+        "paidDate",
+        "receiptNo",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ExpenseRecord": {
+      "title": "ExpenseRecord",
+      "description": "Verified building expense entry in the residence treasury ledger.",
+      "type": "object",
+      "properties": {
+        "ownerUid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["catElevator", "catCleaning", "catSecurity", "catUtilities", "catPlumbing"],
+          "maxLength": 32
+        },
+        "date": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "amount": {
+          "type": "number"
+        },
+        "vendor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "titleFr": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "titleAr": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "titleEn": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerUid",
+        "category",
+        "date",
+        "amount",
+        "vendor",
+        "titleFr",
+        "titleAr",
+        "titleEn",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "IncidentRecord": {
+      "title": "IncidentRecord",
+      "description": "Building maintenance issue or breakdown ticket.",
+      "type": "object",
+      "properties": {
+        "ownerUid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["reported", "in_progress", "fixed"],
+          "maxLength": 32
+        },
+        "date": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "reporter": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "locationFr": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 150
+        },
+        "locationAr": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 150
+        },
+        "locationEn": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 150
+        },
+        "descriptionFr": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "descriptionAr": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "descriptionEn": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerUid",
+        "status",
+        "date",
+        "reporter",
+        "locationFr",
+        "locationAr",
+        "locationEn",
+        "descriptionFr",
+        "descriptionAr",
+        "descriptionEn",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AnnouncementRecord": {
+      "title": "AnnouncementRecord",
+      "description": "Building-wide notice published on the residence notice board.",
+      "type": "object",
+      "properties": {
+        "ownerUid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "urgent": {
+          "type": "boolean"
+        },
+        "date": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "titleFr": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "titleAr": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "titleEn": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "bodyFr": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "bodyAr": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "bodyEn": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1000
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerUid",
+        "urgent",
+        "date",
+        "titleFr",
+        "titleAr",
+        "titleEn",
+        "bodyFr",
+        "bodyAr",
+        "bodyEn",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "PollRecord": {
+      "title": "PollRecord",
+      "description": "Co-ownership quote approval poll.",
+      "type": "object",
+      "properties": {
+        "ownerUid": {
+          "type": "string",
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "yesVotes": {
+          "type": "integer"
+        },
+        "noVotes": {
+          "type": "integer"
+        },
+        "userVote": {
+          "type": "string",
+          "enum": ["none", "yes", "no"],
+          "maxLength": 16
+        },
+        "cost": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "titleFr": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 250
+        },
+        "titleAr": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 250
+        },
+        "titleEn": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 250
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerUid",
+        "yesVotes",
+        "noVotes",
+        "userVote",
+        "cost",
+        "titleFr",
+        "titleAr",
+        "titleEn",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/admins/{adminUid}": {
+      "schema": { "$ref": "#/entities/AdminRecord" },
+      "description": "Bootstrapped administrator lookup collection."
+    },
+    "/apartments/{aptDocId}": {
+      "schema": { "$ref": "#/entities/ApartmentRecord" },
+      "description": "Apartment monthly dues scoped by ownerUid."
+    },
+    "/expenses/{expenseDocId}": {
+      "schema": { "$ref": "#/entities/ExpenseRecord" },
+      "description": "Building expenses scoped by ownerUid."
+    },
+    "/incidents/{incidentDocId}": {
+      "schema": { "$ref": "#/entities/IncidentRecord" },
+      "description": "Building maintenance incidents scoped by ownerUid."
+    },
+    "/announcements/{annoDocId}": {
+      "schema": { "$ref": "#/entities/AnnouncementRecord" },
+      "description": "Building announcements scoped by ownerUid."
+    },
+    "/polls/{pollDocId}": {
+      "schema": { "$ref": "#/entities/PollRecord" },
+      "description": "Resident quote polls scoped by ownerUid."
+    }
+  }
+}

@@ -1,0 +1,289 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Pillar 0: Global default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Core Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isAdmin() {
+      return isVerifiedUser() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        request.auth.token.email == 'harzyyouness75@gmail.com'
+      );
+    }
+
+    // Entity Validation Blueprints
+    function isValidAdminRecord(data) {
+      return data.keys().hasAll(['uid', 'createdAt']) &&
+        data.keys().hasOnly(['uid', 'createdAt']) &&
+        data.uid is string && data.uid.size() >= 1 && data.uid.size() <= 128 && data.uid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.uid == request.auth.uid &&
+        data.createdAt is timestamp;
+    }
+
+    function isValidApartmentRecord(data) {
+      return data.keys().hasAll([
+          'ownerUid', 'aptId', 'number', 'floor',
+          'residentNameFr', 'residentNameAr', 'residentNameEn',
+          'paid', 'amount', 'method', 'paidDate', 'receiptNo',
+          'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerUid', 'aptId', 'number', 'floor',
+          'residentNameFr', 'residentNameAr', 'residentNameEn',
+          'paid', 'amount', 'method', 'paidDate', 'receiptNo',
+          'createdAt', 'updatedAt'
+        ]) &&
+        data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128 && data.ownerUid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerUid == request.auth.uid &&
+        data.aptId is int && data.aptId >= 1 && data.aptId <= 500 &&
+        data.number is string && data.number.size() >= 1 && data.number.size() <= 16 &&
+        data.floor is int && data.floor >= 0 && data.floor <= 100 &&
+        data.residentNameFr is string && data.residentNameFr.size() >= 1 && data.residentNameFr.size() <= 120 &&
+        data.residentNameAr is string && data.residentNameAr.size() >= 1 && data.residentNameAr.size() <= 120 &&
+        data.residentNameEn is string && data.residentNameEn.size() >= 1 && data.residentNameEn.size() <= 120 &&
+        data.paid is bool &&
+        (data.amount is int || data.amount is float) && data.amount >= 0 && data.amount <= 1000000 &&
+        data.method is string && data.method.size() <= 32 && data.method in ['none', 'methodCash', 'methodTransfer', 'methodCheck'] &&
+        data.paidDate is string && data.paidDate.size() <= 32 &&
+        data.receiptNo is string && data.receiptNo.size() <= 32 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidExpenseRecord(data) {
+      return data.keys().hasAll([
+          'ownerUid', 'category', 'date', 'amount', 'vendor',
+          'titleFr', 'titleAr', 'titleEn', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerUid', 'category', 'date', 'amount', 'vendor',
+          'titleFr', 'titleAr', 'titleEn', 'createdAt', 'updatedAt'
+        ]) &&
+        data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128 && data.ownerUid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerUid == request.auth.uid &&
+        data.category is string && data.category.size() <= 32 && data.category in ['catElevator', 'catCleaning', 'catSecurity', 'catUtilities', 'catPlumbing'] &&
+        data.date is string && data.date.size() >= 1 && data.date.size() <= 32 &&
+        (data.amount is int || data.amount is float) && data.amount > 0 && data.amount <= 1000000 &&
+        data.vendor is string && data.vendor.size() >= 1 && data.vendor.size() <= 120 &&
+        data.titleFr is string && data.titleFr.size() >= 1 && data.titleFr.size() <= 200 &&
+        data.titleAr is string && data.titleAr.size() >= 1 && data.titleAr.size() <= 200 &&
+        data.titleEn is string && data.titleEn.size() >= 1 && data.titleEn.size() <= 200 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidIncidentRecord(data) {
+      return data.keys().hasAll([
+          'ownerUid', 'status', 'date', 'reporter',
+          'locationFr', 'locationAr', 'locationEn',
+          'descriptionFr', 'descriptionAr', 'descriptionEn',
+          'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerUid', 'status', 'date', 'reporter',
+          'locationFr', 'locationAr', 'locationEn',
+          'descriptionFr', 'descriptionAr', 'descriptionEn',
+          'createdAt', 'updatedAt'
+        ]) &&
+        data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128 && data.ownerUid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerUid == request.auth.uid &&
+        data.status is string && data.status.size() <= 32 && data.status in ['reported', 'in_progress', 'fixed'] &&
+        data.date is string && data.date.size() >= 1 && data.date.size() <= 32 &&
+        data.reporter is string && data.reporter.size() >= 1 && data.reporter.size() <= 100 &&
+        data.locationFr is string && data.locationFr.size() >= 1 && data.locationFr.size() <= 150 &&
+        data.locationAr is string && data.locationAr.size() >= 1 && data.locationAr.size() <= 150 &&
+        data.locationEn is string && data.locationEn.size() >= 1 && data.locationEn.size() <= 150 &&
+        data.descriptionFr is string && data.descriptionFr.size() >= 1 && data.descriptionFr.size() <= 500 &&
+        data.descriptionAr is string && data.descriptionAr.size() >= 1 && data.descriptionAr.size() <= 500 &&
+        data.descriptionEn is string && data.descriptionEn.size() >= 1 && data.descriptionEn.size() <= 500 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidAnnouncementRecord(data) {
+      return data.keys().hasAll([
+          'ownerUid', 'urgent', 'date',
+          'titleFr', 'titleAr', 'titleEn',
+          'bodyFr', 'bodyAr', 'bodyEn',
+          'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerUid', 'urgent', 'date',
+          'titleFr', 'titleAr', 'titleEn',
+          'bodyFr', 'bodyAr', 'bodyEn',
+          'createdAt', 'updatedAt'
+        ]) &&
+        data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128 && data.ownerUid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerUid == request.auth.uid &&
+        data.urgent is bool &&
+        data.date is string && data.date.size() >= 1 && data.date.size() <= 32 &&
+        data.titleFr is string && data.titleFr.size() >= 1 && data.titleFr.size() <= 200 &&
+        data.titleAr is string && data.titleAr.size() >= 1 && data.titleAr.size() <= 200 &&
+        data.titleEn is string && data.titleEn.size() >= 1 && data.titleEn.size() <= 200 &&
+        data.bodyFr is string && data.bodyFr.size() >= 1 && data.bodyFr.size() <= 1000 &&
+        data.bodyAr is string && data.bodyAr.size() >= 1 && data.bodyAr.size() <= 1000 &&
+        data.bodyEn is string && data.bodyEn.size() >= 1 && data.bodyEn.size() <= 1000 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidPollRecord(data) {
+      return data.keys().hasAll([
+          'ownerUid', 'yesVotes', 'noVotes', 'userVote', 'cost',
+          'titleFr', 'titleAr', 'titleEn', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'ownerUid', 'yesVotes', 'noVotes', 'userVote', 'cost',
+          'titleFr', 'titleAr', 'titleEn', 'createdAt', 'updatedAt'
+        ]) &&
+        data.ownerUid is string && data.ownerUid.size() >= 1 && data.ownerUid.size() <= 128 && data.ownerUid.matches('^[a-zA-Z0-9_\\-]+$') &&
+        data.ownerUid == request.auth.uid &&
+        data.yesVotes is int && data.yesVotes >= 0 && data.yesVotes <= 1000 &&
+        data.noVotes is int && data.noVotes >= 0 && data.noVotes <= 1000 &&
+        data.userVote is string && data.userVote.size() <= 16 && data.userVote in ['none', 'yes', 'no'] &&
+        data.cost is string && data.cost.size() >= 1 && data.cost.size() <= 50 &&
+        data.titleFr is string && data.titleFr.size() >= 1 && data.titleFr.size() <= 250 &&
+        data.titleAr is string && data.titleAr.size() >= 1 && data.titleAr.size() <= 250 &&
+        data.titleEn is string && data.titleEn.size() >= 1 && data.titleEn.size() <= 250 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    // Collection 1: /admins/{adminUid}
+    match /admins/{adminUid} {
+      allow get: if isVerifiedUser() && isValidId(adminUid) && request.auth.uid == adminUid;
+      allow list: if false;
+      allow create: if isVerifiedUser() && isValidId(adminUid) &&
+        request.auth.uid == adminUid &&
+        request.auth.token.email == 'harzyyouness75@gmail.com' &&
+        isValidAdminRecord(incoming()) &&
+        incoming().createdAt == request.time;
+      allow update, delete: if false;
+    }
+
+    // Collection 2: /apartments/{aptDocId}
+    match /apartments/{aptDocId} {
+      allow get: if isVerifiedUser() && isValidId(aptDocId) && (existing().ownerUid == request.auth.uid || isAdmin());
+      allow list: if isVerifiedUser() && resource.data.ownerUid == request.auth.uid;
+      allow create: if isVerifiedUser() && isValidId(aptDocId) &&
+        isValidApartmentRecord(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() && isValidId(aptDocId) &&
+        isValidApartmentRecord(incoming()) &&
+        incoming().ownerUid == existing().ownerUid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time && (
+          isAdmin() ||
+          (existing().ownerUid == request.auth.uid &&
+           incoming().diff(existing()).affectedKeys().hasOnly(['paid', 'amount', 'method', 'paidDate', 'receiptNo', 'updatedAt']))
+        );
+      allow delete: if isVerifiedUser() && isValidId(aptDocId) && (existing().ownerUid == request.auth.uid || isAdmin());
+    }
+
+    // Collection 3: /expenses/{expenseDocId}
+    match /expenses/{expenseDocId} {
+      allow get: if isVerifiedUser() && isValidId(expenseDocId) && (existing().ownerUid == request.auth.uid || isAdmin());
+      allow list: if isVerifiedUser() && resource.data.ownerUid == request.auth.uid;
+      allow create: if isVerifiedUser() && isValidId(expenseDocId) &&
+        isValidExpenseRecord(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() && isValidId(expenseDocId) &&
+        isValidExpenseRecord(incoming()) &&
+        incoming().ownerUid == existing().ownerUid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time && (
+          isAdmin() ||
+          (existing().ownerUid == request.auth.uid &&
+           incoming().diff(existing()).affectedKeys().hasOnly(['category', 'amount', 'vendor', 'titleFr', 'titleAr', 'titleEn', 'updatedAt']))
+        );
+      allow delete: if isVerifiedUser() && isValidId(expenseDocId) && (existing().ownerUid == request.auth.uid || isAdmin());
+    }
+
+    // Collection 4: /incidents/{incidentDocId}
+    match /incidents/{incidentDocId} {
+      allow get: if isVerifiedUser() && isValidId(incidentDocId) && (existing().ownerUid == request.auth.uid || isAdmin());
+      allow list: if isVerifiedUser() && resource.data.ownerUid == request.auth.uid;
+      allow create: if isVerifiedUser() && isValidId(incidentDocId) &&
+        isValidIncidentRecord(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() && isValidId(incidentDocId) &&
+        isValidIncidentRecord(incoming()) &&
+        incoming().ownerUid == existing().ownerUid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time && (
+          isAdmin() ||
+          (existing().ownerUid == request.auth.uid &&
+           existing().status != 'fixed' &&
+           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']))
+        );
+      allow delete: if isVerifiedUser() && isValidId(incidentDocId) && (existing().ownerUid == request.auth.uid || isAdmin());
+    }
+
+    // Collection 5: /announcements/{annoDocId}
+    match /announcements/{annoDocId} {
+      allow get: if isVerifiedUser() && isValidId(annoDocId) && (existing().ownerUid == request.auth.uid || isAdmin());
+      allow list: if isVerifiedUser() && resource.data.ownerUid == request.auth.uid;
+      allow create: if isVerifiedUser() && isValidId(annoDocId) &&
+        isValidAnnouncementRecord(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() && isValidId(annoDocId) &&
+        isValidAnnouncementRecord(incoming()) &&
+        incoming().ownerUid == existing().ownerUid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time && (
+          isAdmin() ||
+          (existing().ownerUid == request.auth.uid &&
+           incoming().diff(existing()).affectedKeys().hasOnly(['urgent', 'titleFr', 'titleAr', 'titleEn', 'bodyFr', 'bodyAr', 'bodyEn', 'updatedAt']))
+        );
+      allow delete: if isVerifiedUser() && isValidId(annoDocId) && (existing().ownerUid == request.auth.uid || isAdmin());
+    }
+
+    // Collection 6: /polls/{pollDocId}
+    match /polls/{pollDocId} {
+      allow get: if isVerifiedUser() && isValidId(pollDocId) && (existing().ownerUid == request.auth.uid || isAdmin());
+      allow list: if isVerifiedUser() && resource.data.ownerUid == request.auth.uid;
+      allow create: if isVerifiedUser() && isValidId(pollDocId) &&
+        isValidPollRecord(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() && isValidId(pollDocId) &&
+        isValidPollRecord(incoming()) &&
+        incoming().ownerUid == existing().ownerUid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time && (
+          isAdmin() ||
+          (existing().ownerUid == request.auth.uid &&
+           incoming().diff(existing()).affectedKeys().hasOnly(['yesVotes', 'noVotes', 'userVote', 'updatedAt']))
+        );
+      allow delete: if isVerifiedUser() && isValidId(pollDocId) && (existing().ownerUid == request.auth.uid || isAdmin());
+    }
+  }
+}

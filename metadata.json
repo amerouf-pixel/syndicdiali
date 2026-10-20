@@ -1,0 +1,6 @@
+{
+  "name": "Syndic Diali",
+  "description": "Application trilingue (FR/AR/EN) de gestion de syndic de copropriété au Maroc : suivi transparent de la caisse, cotisations mensuelles, reçus officiels, pannes et votes AG.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
